@@ -75,6 +75,7 @@
             <div id="form">
                 <h2>Nova Transação</h2>
                 <form action="" onsubmit="Form.submit(event)">
+                    <input type="hidden" id="index" name="index">
                     <div class="input-group">
                         <label class="sr-only" for="description">Descrição</label>
                         <input type="text" id="description" name="description" placeholder="Descrição">
@@ -84,7 +85,7 @@
                         <small>Use o sinal -(negativo) para despesas e ,(vírgula) para casas decimais</small>
 
                         <label class="sr-only" for="date">Data</label>
-                        <input type="date" id="date" name="date">
+                        <input type="date" id="date" name="date" required max="2025-05-29">
                     </div>
 
                     <div class="input-group actions">

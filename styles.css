@@ -259,6 +259,21 @@ footer {
     opacity: 0.6;
 }
 
+.edit-button {
+    width: 30px;
+    height: 30px;
+    vertical-align: middle;
+    cursor: pointer;
+}
+
+.actions-icons {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  height: 100%;
+}
+
+
 /* --------------- RESPONSIVE ---------------*/
 @media (min-width: 800px) {
     html {

@@ -23,7 +23,10 @@ const Transaction = {
         Transaction.all.push(transaction)
         App.reload();
     },
-
+    update(index, transaction) {
+        Transaction.all[index] = transaction;
+        App.reload();
+    },
     remove(index) {
         Transaction.all.splice(index, 1);
         App.reload();
@@ -69,10 +72,14 @@ const DOM = {
 
         const html =
             `
-                <td class="description" onClick="Modal.toggle()">${transaction.description}</td>
+                <td class="description">${transaction.description}</td>
                 <td class="${cssClass}">${amount}</td>
-                <td class="date">${transaction.date}</td>
-                <td><img onclick="Transaction.remove(${index})" src="./assets/minus.svg" alt="Remover Transação"></td>
+                <td class="date">${Utils.formatDate(transaction.date)}</td>
+                <td class="actions-icons">
+                    <img class="edit-button" onclick="DOM.editTransaction(${index})" src="./assets/pencil.png" alt="Editar Transação">
+                    <img onclick="Transaction.remove(${index})" src="./assets/minus.svg" alt="Remover Transação">
+
+                </td>
             `
         return html
     },
@@ -94,6 +101,15 @@ const DOM = {
 
     clearTransactions() {
         DOM.transactionsContainer.innerHTML = "";
+    },
+    editTransaction(index) {
+        const transaction = Transaction.all[index];
+        Form.index.value = index;
+        
+        Form.description.value = transaction.description;
+        Form.amount.value = transaction.amount / 100;
+        Form.date.value = transaction.date;
+        Modal.toggle();
     }
 }
 
@@ -126,12 +142,14 @@ const Utils = {
 
 
 const Form = {
+    index: document.querySelector('input#index'),
     description: document.querySelector('input#description'),
     amount: document.querySelector('input#amount'),
     date: document.querySelector('input#date'),
 
     getValues() {
         return {
+            index: Form.index.value,
             description: Form.description.value,
             amount: Form.amount.value,
             date: Form.date.value
@@ -148,11 +166,11 @@ const Form = {
     },
 
     formatValues() {
-        let { description, amount, date } = Form.getValues();
+        let { index, description, amount, date } = Form.getValues();
         amount = Utils.formatAmount(amount);
-        date = Utils.formatDate(date);
-
+        
         return {
+            index,
             description,
             amount,
             date
@@ -161,17 +179,22 @@ const Form = {
 
     clearFields() {
         Form.description.value = "";
+        Form.index.value = "";
+        
         Form.amount.value = "";
         Form.date.value = "";
     },
 
     submit(event) {
         event.preventDefault();
-
         try {
             Form.validateFields();
-            const transaction = Form.formatValues();
-            Transaction.add(transaction);
+            const data = Form.formatValues();
+            if (data.index) {
+                Transaction.update(data.index, data);
+            } else {
+                Transaction.add(data);
+            }
             Form.clearFields();
             Modal.toggle();
             
