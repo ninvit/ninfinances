@@ -19,17 +19,59 @@ const Transaction = {
 
     all: Storage.get(),
 
-    add(transaction) {
-        Transaction.all.push(transaction)
-        App.reload();
+    async add(transaction) {
+        try {
+            const response = await fetch('http://localhost:3000/transactions', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json'
+                },
+                body: JSON.stringify(transaction)
+            });
+            if (!response.ok) {
+                console.error("Error creating transaction:", response.status);
+                return;
+            }
+            Transaction.all.push(transaction);
+            App.reload();
+        } catch (error) {
+            console.error("Error creating transaction:", error);
+        }
     },
-    update(index, transaction) {
-        Transaction.all[index] = transaction;
-        App.reload();
+    async update(index, transaction) {
+        try {
+            const response = await fetch(`http://localhost:3000/transactions/${transaction._id}`, {
+                method: 'PUT',
+                headers: {
+                    'Content-Type': 'application/json'
+                },
+                body: JSON.stringify(transaction)
+            });
+            if (!response.ok) {
+                console.error("Error updating transaction:", response.status);
+                return;
+            }
+            Transaction.all[index] = transaction;
+            App.reload();
+        } catch (error) {
+            console.error("Error updating transaction:", error);
+        }
     },
-    remove(index) {
-        Transaction.all.splice(index, 1);
-        App.reload();
+    async remove(id) {
+        try {
+            const response = await fetch(`http://localhost:3000/transactions/${id}`, {
+                method: 'DELETE',
+            });
+            if (!response.ok) {
+                console.error("Error deleting transaction:", response.status);
+                return;
+            }
+            Transaction.all = Transaction.all.filter(transaction => transaction._id !== id);
+            Storage.set(Transaction.all);
+            App.reload();
+        } catch (error) {
+            console.error("Error deleting transaction:", error);
+        }
     },
 
     incomes() {
@@ -77,8 +119,7 @@ const DOM = {
                 <td class="date">${Utils.formatDate(transaction.date)}</td>
                 <td class="actions-icons">
                     <img class="edit-button" onclick="DOM.editTransaction(${index})" src="./assets/pencil.png" alt="Editar Transação">
-                    <img onclick="Transaction.remove(${index})" src="./assets/minus.svg" alt="Remover Transação">
-
+                    <img onclick="Transaction.remove('${transaction._id}')" src="./assets/minus.svg" alt="Remover Transação">
                 </td>
             `
         return html
@@ -102,9 +143,9 @@ const DOM = {
     clearTransactions() {
         DOM.transactionsContainer.innerHTML = "";
     },
-    editTransaction(index) {
+    async editTransaction(index) {
         const transaction = Transaction.all[index];
-        Form.index.value = index;
+        Form.index.value = transaction._id;
         
         Form.description.value = transaction.description;
         Form.amount.value = transaction.amount / 100;
@@ -132,14 +173,11 @@ const Utils = {
         return signal + value
     },
 
-
-
     formatDate(date) {
         const splittedDate = date.split("-");
         return `${splittedDate[2]}/${splittedDate[1]}/${splittedDate[0]} `
     }
 }
-
 
 const Form = {
     index: document.querySelector('input#index'),
@@ -191,7 +229,7 @@ const Form = {
             Form.validateFields();
             const data = Form.formatValues();
             if (data.index) {
-                Transaction.update(data.index, data);
+                Transaction.update(data.index, {...data, _id: data.index});
             } else {
                 Transaction.add(data);
             }
@@ -206,13 +244,32 @@ const Form = {
     }
 }
 
-const App = {
-    init() {
-        Transaction.all.forEach(DOM.addTransaction);
-        DOM.updateBalance();
-        Storage.set(Transaction.all);
-    },
 
+const App = {
+    async init() {
+        
+        try {
+            const response = await fetch('http://localhost:3000/transactions', {
+            });
+            if (!response.ok) {
+                console.error("Error fetching transactions:", response.status);
+                Transaction.all = [];
+                DOM.clearTransactions();
+                DOM.updateBalance();
+                return;
+            }
+            const transactions = await response.json();
+            Transaction.all = transactions.map(transaction => ({
+                ...transaction,
+                id: transaction._id
+            }));
+            Transaction.all.forEach(DOM.addTransaction);
+            DOM.updateBalance();
+            Storage.set(Transaction.all);
+        } catch (error) {
+            console.error("Error fetching transactions:", error);
+        }
+    },
     reload() {
         DOM.clearTransactions();
         App.init();
@@ -220,4 +277,3 @@ const App = {
 }
 
 App.init();
-

@@ -273,6 +273,67 @@ footer {
   height: 100%;
 }
 
+/* --------------- LOGIN/REGISTER FORMS ---------------*/
+#login-register-forms {
+    margin-top: 5rem;
+}
+
+#login-register-forms h2 {
+    text-align: center;
+}
+
+#login-register-forms .input-group {
+    margin-bottom: 1rem;
+}
+
+#login-register-forms label {
+    display: block;
+    margin-bottom: 0.5rem;
+    color: var(--dark-blue);
+}
+
+#login-register-forms input {
+    width: 100%;
+    padding: 0.5rem;
+    border: 1px solid #ccc;
+    border-radius: 0.25rem;
+}
+
+#login-register-forms button {
+    width: 100%;
+    padding: 0.75rem;
+    background-color: #007bff;
+    color: #fff;
+    border: none;
+    border-radius: 0.25rem;
+    cursor: pointer;
+}
+
+#login-register-forms button:hover {
+    background-color: #0056b3;
+}
+
+/* --------------- MENU ---------------*/
+.menu {
+    list-style: none;
+    display: flex;
+    justify-content: center;
+    padding: 1rem 0;
+}
+
+.menu li {
+    margin: 0 1rem;
+}
+
+.menu a {
+    color: var(--dark-blue);
+    text-decoration: none;
+    font-weight: bold;
+}
+
+.menu a:hover {
+    color: #3dd705;
+}
 
 /* --------------- RESPONSIVE ---------------*/
 @media (min-width: 800px) {
