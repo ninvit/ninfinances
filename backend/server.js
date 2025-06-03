@@ -3,6 +3,7 @@ const mongoose = require('mongoose');
 const cors = require('cors');
 const bcrypt = require('bcrypt');
 const jwt = require('jsonwebtoken');
+const path = require('path');
 require('dotenv').config();
 
 const app = express();
@@ -16,10 +17,13 @@ const JWT_SECRET = process.env.JWT_SECRET;
 const logger = require('./middleware/logger');
 const { loginLimiter, registerLimiter, apiLimiter } = require('./middleware/rateLimiter');
 
-app.use(express.static(__dirname + '/../'));
+// Serve static files from the root directory
+app.use(express.static(path.join(__dirname, '..')));
+
 app.use(cors());
 app.use(express.json());
 app.use(logger);
+
 mongoose.connect(connectionString, {
     useNewUrlParser: true,
     useUnifiedTopology: true,
@@ -27,13 +31,18 @@ mongoose.connect(connectionString, {
 .then(() => console.log('Connected to MongoDB'))
 .catch(err => console.error('MongoDB connection error:', err));
 
-app.listen(port, () => {
+app.listen(port, '0.0.0.0', () => {
     console.log(`Server is running on port ${port}`);
 });
 
 // Middleware to verify JWT token
 const verifyToken = (req, res, next) => {
-    const token = req.headers['authorization'];
+    const authHeader = req.headers['authorization'];
+    if (!authHeader) {
+        return res.status(401).json({ message: 'No token provided' });
+    }
+
+    const token = authHeader.startsWith('Bearer ') ? authHeader.slice(7) : authHeader;
     if (!token) {
         return res.status(401).json({ message: 'No token provided' });
     }
@@ -53,17 +62,17 @@ const verifyToken = (req, res, next) => {
 const authController = require('./controllers/authController');
 const transactionController = require('./controllers/transactionController');
 
-// Routes
-app.get('/', authController.verifyToken, (req, res) => {
-    res.sendFile(__dirname + '/../index.html');
+// Public routes
+app.get('/', (req, res) => {
+    res.sendFile(path.join(__dirname, '..', 'index.html'));
 });
 
 app.get('/login', (req, res) => {
-    res.sendFile(__dirname + '/../login.html');
+    res.sendFile(path.join(__dirname, '..', 'login.html'));
 });
 
 app.get('/register', (req, res) => {
-    res.sendFile(__dirname + '/../register.html');
+    res.sendFile(path.join(__dirname, '..', 'register.html'));
 });
 
 // Auth routes with rate limiting

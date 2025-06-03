@@ -36,7 +36,13 @@
     <script>
         const Storage = {
             setToken(token) {
+                console.log('Setting token:', token ? 'Token received' : 'No token');
                 localStorage.setItem("nin.finances: token", token);
+            },
+            getToken() {
+                const token = localStorage.getItem("nin.finances: token");
+                console.log('Getting token:', token ? 'Token exists' : 'No token');
+                return token;
             }
         };
 
@@ -69,7 +75,11 @@
                     throw new Error(data.message || 'Login failed');
                 }
 
-                // Limpar apenas os dados específicos do usuário
+                if (!data.token) {
+                    throw new Error('No token received from server');
+                }
+
+                // Clear old data
                 localStorage.removeItem("nin.finances: token");
                 localStorage.removeItem("nin.finances: transactions");
                 localStorage.removeItem("userEmail");
@@ -77,6 +87,12 @@
                 // Set new data
                 Storage.setToken(data.token);
                 localStorage.setItem('userEmail', email);
+                
+                // Verify token was stored
+                const storedToken = Storage.getToken();
+                if (!storedToken) {
+                    throw new Error('Failed to store token');
+                }
                 
                 console.log('Login successful, redirecting...');
                 window.location.href = '/';

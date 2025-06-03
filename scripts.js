@@ -12,12 +12,16 @@ const Storage = {
         localStorage.setItem("nin.finances: transactions", JSON.stringify(transactions));
     },
     getToken() {
-        return localStorage.getItem("nin.finances: token");
+        const token = localStorage.getItem("nin.finances: token");
+        console.log('Getting token:', token ? 'Token exists' : 'No token');
+        return token;
     },
     setToken(token) {
+        console.log('Setting token:', token ? 'Token received' : 'No token');
         localStorage.setItem("nin.finances: token", token);
     },
     clearToken() {
+        console.log('Clearing token');
         localStorage.removeItem("nin.finances: token");
     }
 }
@@ -29,21 +33,24 @@ const Transaction = {
         try {
             const token = Storage.getToken();
             if (!token) {
+                console.log('No token found, redirecting to login');
                 window.location.href = '/login.html';
                 return;
             }
 
+            console.log('Adding transaction with token:', token ? 'Token exists' : 'No token');
             const response = await fetch('http://localhost:3000/api/transactions', {
                 method: 'POST',
                 headers: {
                     'Content-Type': 'application/json',
-                    'Authorization': token
+                    'Authorization': `Bearer ${token}`
                 },
                 body: JSON.stringify(transaction)
             });
 
             if (!response.ok) {
                 if (response.status === 401) {
+                    console.log('Unauthorized, clearing token and redirecting to login');
                     Storage.clearToken();
                     window.location.href = '/login.html';
                     return;
@@ -76,7 +83,7 @@ const Transaction = {
             const response = await fetch(`http://localhost:3000/api/transactions/${transaction._id}`, {
                 method: 'DELETE',
                 headers: {
-                    'Authorization': token
+                    'Authorization': `Bearer ${token}`
                 }
             });
 
@@ -128,7 +135,7 @@ const Transaction = {
                 method: 'PUT',
                 headers: {
                     'Content-Type': 'application/json',
-                    'Authorization': token
+                    'Authorization': `Bearer ${token}`
                 },
                 body: JSON.stringify(transaction)
             });
@@ -302,6 +309,7 @@ const App = {
         try {
             const token = Storage.getToken();
             if (!token) {
+                console.log('No token found, redirecting to login');
                 window.location.href = '/login.html';
                 return;
             }
@@ -313,14 +321,16 @@ const App = {
                 userEmail.textContent = tokenData.email || localStorage.getItem('userEmail') || '';
             }
 
+            console.log('Fetching transactions with token:', token ? 'Token exists' : 'No token');
             const response = await fetch('http://localhost:3000/api/transactions', {
                 headers: {
-                    'Authorization': token
+                    'Authorization': `Bearer ${token}`
                 }
             });
 
             if (!response.ok) {
                 if (response.status === 401) {
+                    console.log('Unauthorized, clearing token and redirecting to login');
                     Storage.clearToken();
                     window.location.href = '/login.html';
                     return;
@@ -351,7 +361,7 @@ const App = {
                 await fetch('http://localhost:3000/logout', {
                     method: 'POST',
                     headers: {
-                        'Authorization': token
+                        'Authorization': `Bearer ${token}`
                     }
                 });
             }
