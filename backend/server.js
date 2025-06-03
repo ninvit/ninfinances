@@ -41,13 +41,28 @@ app.use(express.static(path.join(__dirname, '..')));
 
 // Configure CORS
 const corsOptions = {
-    origin: ['https://ninfinances.onrender.com', 'http://localhost:3000'],
+    origin: function (origin, callback) {
+        const allowedOrigins = ['https://ninfinances.onrender.com', 'http://localhost:3000'];
+        // Allow requests with no origin (like mobile apps or curl requests)
+        if (!origin) return callback(null, true);
+        if (allowedOrigins.indexOf(origin) === -1) {
+            const msg = 'The CORS policy for this site does not allow access from the specified Origin.';
+            return callback(new Error(msg), false);
+        }
+        return callback(null, true);
+    },
     methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS'],
     allowedHeaders: ['Content-Type', 'Authorization'],
-    credentials: true
+    credentials: true,
+    preflightContinue: false,
+    optionsSuccessStatus: 204
 };
 
 app.use(cors(corsOptions));
+
+// Handle preflight requests
+app.options('*', cors(corsOptions));
+
 app.use(express.json());
 app.use(logger);
 
