@@ -13,6 +13,25 @@ const port = process.env.PORT || 3000;
 const connectionString = process.env.MONGODB_URI;
 const JWT_SECRET = process.env.JWT_SECRET;
 
+// Debug logs for environment variables
+console.log('Environment variables:', {
+    NODE_ENV: process.env.NODE_ENV,
+    PORT: process.env.PORT,
+    hasMongoURI: !!connectionString,
+    hasJWTSecret: !!JWT_SECRET
+});
+
+// Validate required environment variables
+if (!connectionString) {
+    console.error('MONGODB_URI is not defined in environment variables');
+    process.exit(1);
+}
+
+if (!JWT_SECRET) {
+    console.error('JWT_SECRET is not defined in environment variables');
+    process.exit(1);
+}
+
 // Import middlewares
 const logger = require('./middleware/logger');
 const { loginLimiter, registerLimiter, apiLimiter } = require('./middleware/rateLimiter');
@@ -24,12 +43,20 @@ app.use(cors());
 app.use(express.json());
 app.use(logger);
 
-mongoose.connect(connectionString, {
-    useNewUrlParser: true,
-    useUnifiedTopology: true,
-})
-.then(() => console.log('Connected to MongoDB'))
-.catch(err => console.error('MongoDB connection error:', err));
+// MongoDB connection with retry logic
+const connectWithRetry = async () => {
+    try {
+        console.log('Attempting to connect to MongoDB...');
+        await mongoose.connect(connectionString);
+        console.log('Connected to MongoDB successfully');
+    } catch (err) {
+        console.error('MongoDB connection error:', err);
+        console.log('Retrying connection in 5 seconds...');
+        setTimeout(connectWithRetry, 5000);
+    }
+};
+
+connectWithRetry();
 
 app.listen(port, '0.0.0.0', () => {
     console.log(`Server is running on port ${port}`);

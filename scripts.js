@@ -39,7 +39,7 @@ const Transaction = {
             }
 
             console.log('Adding transaction with token:', token ? 'Token exists' : 'No token');
-            const response = await fetch('http://localhost:3000/api/transactions', {
+            const response = await fetch(`${window.APP_CONFIG.backendUrl}/api/transactions`, {
                 method: 'POST',
                 headers: {
                     'Content-Type': 'application/json',
@@ -80,7 +80,7 @@ const Transaction = {
                 throw new Error('Invalid transaction');
             }
 
-            const response = await fetch(`http://localhost:3000/api/transactions/${transaction._id}`, {
+            const response = await fetch(`${window.APP_CONFIG.backendUrl}/api/transactions/${transaction._id}`, {
                 method: 'DELETE',
                 headers: {
                     'Authorization': `Bearer ${token}`
@@ -131,7 +131,7 @@ const Transaction = {
                 throw new Error('Invalid transaction');
             }
 
-            const response = await fetch(`http://localhost:3000/api/transactions/${oldTransaction._id}`, {
+            const response = await fetch(`${window.APP_CONFIG.backendUrl}/api/transactions/${oldTransaction._id}`, {
                 method: 'PUT',
                 headers: {
                     'Content-Type': 'application/json',
@@ -322,7 +322,7 @@ const App = {
             }
 
             console.log('Fetching transactions with token:', token ? 'Token exists' : 'No token');
-            const response = await fetch('http://localhost:3000/api/transactions', {
+            const response = await fetch(`${window.APP_CONFIG.backendUrl}/api/transactions`, {
                 headers: {
                     'Authorization': `Bearer ${token}`
                 }
@@ -357,22 +357,23 @@ const App = {
     async logout() {
         try {
             const token = Storage.getToken();
-            if (token) {
-                await fetch('http://localhost:3000/logout', {
-                    method: 'POST',
-                    headers: {
-                        'Authorization': `Bearer ${token}`
-                    }
-                });
+            if (!token) {
+                window.location.href = '/login.html';
+                return;
             }
-        } catch (error) {
-            console.error('Error logging out:', error);
-        } finally {
-            // Limpar apenas os dados específicos do usuário
-            localStorage.removeItem("nin.finances: token");
-            localStorage.removeItem("nin.finances: transactions");
-            localStorage.removeItem("userEmail");
+
+            await fetch(`${window.APP_CONFIG.backendUrl}/logout`, {
+                method: 'POST',
+                headers: {
+                    'Authorization': `Bearer ${token}`
+                }
+            });
+
+            Storage.clearToken();
             window.location.href = '/login.html';
+        } catch (error) {
+            console.error("Error logging out:", error);
+            alert("Error logging out. Please try again.");
         }
     }
 }
