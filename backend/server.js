@@ -39,7 +39,15 @@ const { loginLimiter, registerLimiter, apiLimiter } = require('./middleware/rate
 // Serve static files from the root directory
 app.use(express.static(path.join(__dirname, '..')));
 
-app.use(cors());
+// Configure CORS
+const corsOptions = {
+    origin: ['https://ninfinances.onrender.com', 'http://localhost:3000'],
+    methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS'],
+    allowedHeaders: ['Content-Type', 'Authorization'],
+    credentials: true
+};
+
+app.use(cors(corsOptions));
 app.use(express.json());
 app.use(logger);
 
