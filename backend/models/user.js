@@ -26,27 +26,15 @@ const userSchema = new mongoose.Schema({
 // Hash the password before saving
 userSchema.pre('save', async function(next) {
     if (!this.isModified('password')) {
-        console.log('Password not modified, skipping hash');
         return next();
     }
     
     try {
-        console.log('Hashing password:', {
-            originalLength: this.password.length,
-            isModified: this.isModified('password')
-        });
-        
         const salt = await bcrypt.genSalt(10);
         this.password = await bcrypt.hash(this.password, salt);
-        
-        console.log('Password hashed:', {
-            hashedLength: this.password.length,
-            startsWith: this.password.substring(0, 7)
-        });
-        
         return next();
     } catch (err) {
-        console.error('Error hashing password:', err);
+        console.error('Error hashing password:', err.message);
         return next(err);
     }
 });

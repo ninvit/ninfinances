@@ -5,7 +5,7 @@ const jwt = require('jsonwebtoken');
 exports.register = async (req, res) => {
     try {
         const { username, password, email, role } = req.body;
-        console.log('Register attempt:', { username, email, passwordLength: password.length });
+        console.log('Register attempt:', { username, email });
 
         // Validate input
         if (!username || !password || !email) {
@@ -21,36 +21,23 @@ exports.register = async (req, res) => {
         // Create new user with plain password
         const newUser = new User({
             username,
-            password, // Senha em texto puro
+            password,
             email,
             role: role || 'user'
         });
 
-        console.log('User object before save:', {
+        console.log('Creating new user:', {
             username: newUser.username,
-            email: newUser.email,
-            hasPassword: !!newUser.password,
-            passwordLength: newUser.password.length
+            email: newUser.email
         });
 
         // Save user to database
         await newUser.save();
 
-        console.log('User after save:', {
+        console.log('User created successfully:', {
             id: newUser._id,
             username: newUser.username,
-            email: newUser.email,
-            hasPassword: !!newUser.password,
-            passwordLength: newUser.password.length,
-            storedHash: newUser.password
-        });
-
-        // Test password immediately after save
-        const testPassword = await bcrypt.compare(password, newUser.password);
-        console.log('Immediate password test:', {
-            originalPassword: password,
-            storedHash: newUser.password,
-            isValid: testPassword
+            email: newUser.email
         });
 
         // Generate JWT token
@@ -66,7 +53,7 @@ exports.register = async (req, res) => {
             token
         });
     } catch (error) {
-        console.error('Error registering user:', error);
+        console.error('Error registering user:', error.message);
         res.status(500).json({ message: 'Error registering user', error: error.message });
     }
 };
@@ -78,7 +65,7 @@ exports.login = async (req, res) => {
 
         // Validate input
         if (!email || !password) {
-            console.log('Missing fields:', { email: !!email, password: !!password });
+            console.log('Missing fields:', { email: !!email, hasPassword: !!password });
             return res.status(400).json({ message: 'Missing required fields' });
         }
 
@@ -91,20 +78,9 @@ exports.login = async (req, res) => {
             return res.status(401).json({ message: 'Invalid credentials' });
         }
 
-        console.log('User details:', {
-            id: user._id,
-            email: user.email,
-            hasPassword: !!user.password,
-            passwordLength: user.password.length
-        });
-
         // Compare passwords
         const isPasswordValid = await bcrypt.compare(password, user.password);
-        console.log('Password validation:', {
-            providedPassword: password,
-            storedHash: user.password,
-            isValid: isPasswordValid
-        });
+        console.log('Password validation result:', { isValid: isPasswordValid });
 
         if (!isPasswordValid) {
             console.log('Invalid password for user:', email);
@@ -127,7 +103,7 @@ exports.login = async (req, res) => {
             email: user.email
         });
     } catch (error) {
-        console.error('Error logging in:', error);
+        console.error('Error logging in:', error.message);
         res.status(500).json({ 
             message: 'Error logging in', 
             error: error.message,

@@ -7,9 +7,13 @@ const logger = (req, res, next) => {
 
     console.log(`[${timestamp}] ${method} ${url} - IP: ${ip} - User-Agent: ${userAgent}`);
 
-    // Log request body for non-GET requests
+    // Log request body for non-GET requests, masking sensitive data
     if (method !== 'GET') {
-        console.log('Request Body:', req.body);
+        const sanitizedBody = { ...req.body };
+        if (sanitizedBody.password) {
+            sanitizedBody.password = '[REDACTED]';
+        }
+        console.log('Request Body:', sanitizedBody);
     }
 
     // Log response
@@ -17,7 +21,9 @@ const logger = (req, res, next) => {
     res.send = function (body) {
         console.log(`[${timestamp}] Response Status: ${res.statusCode}`);
         if (res.statusCode >= 400) {
-            console.log('Error Response:', body);
+            // Sanitize error response
+            const sanitizedBody = typeof body === 'string' ? body : JSON.stringify(body);
+            console.log('Error Response:', sanitizedBody);
         }
         return originalSend.call(this, body);
     };
