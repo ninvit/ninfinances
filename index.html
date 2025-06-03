@@ -15,14 +15,14 @@
 <body>
 
     <header>
-        <h1 id="logo">nin.Finance$</h1>
+        <div class="header-content">
+            <h1 id="logo">nin.Finance$</h1>
+            <div class="user-info">
+                <span id="user-email" class="user-email"></span>
+                <button id="logout-button" onclick="App.logout()">Logout</button>
+            </div>
+        </div>
     </header>
-
-    <nav class="container">
-        <ul class="menu">
-            <li><a href="index.html">Home</a></li>
-        </ul>
-    </nav>
 
     <main class="container">
         <section id="balance">
@@ -68,7 +68,7 @@
                     </tr>
                 </thead>
                 <tbody>
-                    
+
                 </tbody>
             </table>
         </section>

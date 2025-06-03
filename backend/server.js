@@ -3,17 +3,23 @@ const mongoose = require('mongoose');
 const cors = require('cors');
 const bcrypt = require('bcrypt');
 const jwt = require('jsonwebtoken');
+require('dotenv').config();
 
 const app = express();
-const port = 3000;
+const port = process.env.PORT || 3000;
 
-// Replace with your MongoDB connection string
-const connectionString = "mongodb+srv://ninvit:6a9p91SE6aO7RN8E@cluster0.bezll.mongodb.net/ninfinances?retryWrites=true&w=majority&appName=Cluster0";
+// Use environment variables for sensitive data
+const connectionString = process.env.MONGODB_URI;
+const JWT_SECRET = process.env.JWT_SECRET;
 
+// Import middlewares
+const logger = require('./middleware/logger');
+const { loginLimiter, registerLimiter, apiLimiter } = require('./middleware/rateLimiter');
 
 app.use(express.static(__dirname + '/../'));
 app.use(cors());
 app.use(express.json());
+app.use(logger);
 mongoose.connect(connectionString, {
     useNewUrlParser: true,
     useUnifiedTopology: true,
@@ -25,64 +31,61 @@ app.listen(port, () => {
     console.log(`Server is running on port ${port}`);
 });
 
-app.get('/', (req, res) => {
-  res.sendFile(__dirname + '/../index.html');
-});
-
-// API endpoints
-app.get('/transactions', async (req, res) => {
-    try {
-        const transactions = await Transaction.find({});
-        res.send(transactions);
-    } catch (error) {
-        res.status(500).send({ message: 'Error getting transactions', error });
+// Middleware to verify JWT token
+const verifyToken = (req, res, next) => {
+    const token = req.headers['authorization'];
+    if (!token) {
+        return res.status(401).json({ message: 'No token provided' });
     }
-});
 
-app.post('/transactions', async (req, res) => {
-    try {
-        const transaction = new Transaction({ ...req.body });
-        await transaction.save();
-        res.status(201).send({ message: 'Transaction created successfully' });
-    } catch (error) {
-        res.status(500).send({ message: 'Error creating transaction', error });
-    }
-});
-
-app.get('/transactions/:id', async (req, res) => {
-    try {
-        const transaction = await Transaction.findOne({ _id: req.params.id });
-        if (!transaction) {
-            return res.status(404).send({ message: 'Transaction not found' });
+    jwt.verify(token, JWT_SECRET, (err, decoded) => {
+        if (err) {
+            return res.status(401).json({ message: 'Invalid token' });
         }
-        res.send(transaction);
-    } catch (error) {
-        res.status(500).send({ message: 'Error getting transaction', error });
-    }
+
+        req.userId = decoded.userId;
+        req.userEmail = decoded.email;
+        next();
+    });
+};
+
+// Import controllers
+const authController = require('./controllers/authController');
+const transactionController = require('./controllers/transactionController');
+
+// Routes
+app.get('/', authController.verifyToken, (req, res) => {
+    res.sendFile(__dirname + '/../index.html');
 });
 
-app.put('/transactions/:id', async (req, res) => {
-    try {
-        const transaction = await Transaction.findOneAndUpdate({ _id: req.params.id }, req.body, { new: true });
-        if (!transaction) {
-            return res.status(404).send({ message: 'Transaction not found' });
-        }
-        res.send({ message: 'Transaction updated successfully' });
-    } catch (error) {
-        res.status(500).send({ message: 'Error updating transaction', error });
-    }
+app.get('/login', (req, res) => {
+    res.sendFile(__dirname + '/../login.html');
 });
 
-app.delete('/transactions/:id', async (req, res) => {
-    try {
-        const transaction = await Transaction.findOneAndDelete({ _id: req.params.id });
-        if (!transaction) {
-            return res.status(404).send({ message: 'Transaction not found' });
-        }
-        res.send({ message: 'Transaction deleted successfully' });
-    } catch (error) {
-        res.status(500).send({ message: 'Error deleting transaction', error });
-    }
+app.get('/register', (req, res) => {
+    res.sendFile(__dirname + '/../register.html');
 });
+
+// Auth routes with rate limiting
+app.post('/register', registerLimiter, authController.register);
+app.post('/login', loginLimiter, authController.login);
+app.post('/logout', authController.verifyToken, authController.logout);
+
+// Protected routes with rate limiting
+app.use('/api', apiLimiter, authController.verifyToken);
+
+// Transaction routes
+app.get('/api/transactions', transactionController.getAllTransactions);
+app.post('/api/transactions', transactionController.createTransaction);
+app.get('/api/transactions/:id', transactionController.getTransaction);
+app.put('/api/transactions/:id', transactionController.updateTransaction);
+app.delete('/api/transactions/:id', transactionController.deleteTransaction);
 
 const Transaction = require('./models/transaction');
+const User = require('./models/user');
+
+// Error handling middleware
+app.use((err, req, res, next) => {
+    console.error(err.stack);
+    res.status(500).json({ message: 'Something went wrong!', error: err.message });
+});

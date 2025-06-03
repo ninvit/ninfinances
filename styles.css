@@ -94,9 +94,50 @@ header {
     text-align: center;
 }
 
+.header-content {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 0 2rem;
+    max-width: 1200px;
+    margin: 0 auto;
+}
+
 #logo {
     color: #fff;
     font-weight: 100;
+    margin: 0;
+}
+
+.user-info {
+    display: flex;
+    align-items: center;
+    gap: 1rem;
+}
+
+.user-email {
+    color: #fff;
+    font-size: 1rem;
+    font-weight: 500;
+    padding: 0.5rem;
+    background: rgba(255, 255, 255, 0.1);
+    border-radius: 0.25rem;
+}
+
+#logout-button {
+    background: transparent;
+    border: 2px solid #fff;
+    color: #fff;
+    padding: 0.5rem 1rem;
+    border-radius: 0.25rem;
+    cursor: pointer;
+    font-size: 0.9rem;
+    transition: all 0.3s ease;
+}
+
+#logout-button:hover {
+    background: #fff;
+    color: darkorange;
 }
 
 /* --------------- BALANCE ---------------*/

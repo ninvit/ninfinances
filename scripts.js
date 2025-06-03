@@ -4,73 +4,151 @@ const Modal = {
     }
 }
 
-const transactions = [];
-
 const Storage = {
     get() {
         return JSON.parse(localStorage.getItem("nin.finances: transactions")) || [];
-     },
-    set(transactions) { 
+    },
+    set(transactions) {
         localStorage.setItem("nin.finances: transactions", JSON.stringify(transactions));
     },
+    getToken() {
+        return localStorage.getItem("nin.finances: token");
+    },
+    setToken(token) {
+        localStorage.setItem("nin.finances: token", token);
+    },
+    clearToken() {
+        localStorage.removeItem("nin.finances: token");
+    }
 }
 
 const Transaction = {
-
     all: Storage.get(),
 
     async add(transaction) {
         try {
-            const response = await fetch('http://localhost:3000/transactions', {
+            const token = Storage.getToken();
+            if (!token) {
+                window.location.href = '/login.html';
+                return;
+            }
+
+            const response = await fetch('http://localhost:3000/api/transactions', {
                 method: 'POST',
                 headers: {
-                    'Content-Type': 'application/json'
+                    'Content-Type': 'application/json',
+                    'Authorization': token
                 },
                 body: JSON.stringify(transaction)
             });
+
             if (!response.ok) {
-                console.error("Error creating transaction:", response.status);
-                return;
+                if (response.status === 401) {
+                    Storage.clearToken();
+                    window.location.href = '/login.html';
+                    return;
+                }
+                throw new Error(`HTTP error! status: ${response.status}`);
             }
-            Transaction.all.push(transaction);
+
+            const newTransaction = await response.json();
+            Transaction.all.push(newTransaction);
             App.reload();
         } catch (error) {
             console.error("Error creating transaction:", error);
+            alert("Error creating transaction. Please try again.");
         }
     },
+
+    async remove(index) {
+        try {
+            const token = Storage.getToken();
+            if (!token) {
+                window.location.href = '/login.html';
+                return;
+            }
+
+            const transaction = Transaction.all[index];
+            if (!transaction || !transaction._id) {
+                throw new Error('Invalid transaction');
+            }
+
+            const response = await fetch(`http://localhost:3000/api/transactions/${transaction._id}`, {
+                method: 'DELETE',
+                headers: {
+                    'Authorization': token
+                }
+            });
+
+            if (!response.ok) {
+                if (response.status === 401) {
+                    Storage.clearToken();
+                    window.location.href = '/login.html';
+                    return;
+                }
+                const error = await response.json();
+                throw new Error(error.message || 'Error removing transaction');
+            }
+
+            Transaction.all.splice(index, 1);
+            App.reload();
+        } catch (error) {
+            console.error("Error removing transaction:", error);
+            alert(error.message);
+        }
+    },
+
+    edit(index) {
+        const transaction = Transaction.all[index];
+        if (!transaction || !transaction._id) {
+            alert('Invalid transaction');
+            return;
+        }
+        Form.description.value = transaction.description;
+        Form.amount.value = transaction.amount / 100;
+        Form.date.value = transaction.date.split('/').reverse().join('-');
+        Form.index.value = index;
+        Modal.toggle();
+    },
+
     async update(index, transaction) {
         try {
-            const response = await fetch(`http://localhost:3000/transactions/${transaction._id}`, {
+            const token = Storage.getToken();
+            if (!token) {
+                window.location.href = '/login.html';
+                return;
+            }
+
+            const oldTransaction = Transaction.all[index];
+            if (!oldTransaction || !oldTransaction._id) {
+                throw new Error('Invalid transaction');
+            }
+
+            const response = await fetch(`http://localhost:3000/api/transactions/${oldTransaction._id}`, {
                 method: 'PUT',
                 headers: {
-                    'Content-Type': 'application/json'
+                    'Content-Type': 'application/json',
+                    'Authorization': token
                 },
                 body: JSON.stringify(transaction)
             });
+
             if (!response.ok) {
-                console.error("Error updating transaction:", response.status);
-                return;
+                if (response.status === 401) {
+                    Storage.clearToken();
+                    window.location.href = '/login.html';
+                    return;
+                }
+                const error = await response.json();
+                throw new Error(error.message || 'Error updating transaction');
             }
-            Transaction.all[index] = transaction;
+
+            const updatedTransaction = await response.json();
+            Transaction.all[index] = updatedTransaction;
             App.reload();
         } catch (error) {
             console.error("Error updating transaction:", error);
-        }
-    },
-    async remove(id) {
-        try {
-            const response = await fetch(`http://localhost:3000/transactions/${id}`, {
-                method: 'DELETE',
-            });
-            if (!response.ok) {
-                console.error("Error deleting transaction:", response.status);
-                return;
-            }
-            Transaction.all = Transaction.all.filter(transaction => transaction._id !== id);
-            Storage.set(Transaction.all);
-            App.reload();
-        } catch (error) {
-            console.error("Error deleting transaction:", error);
+            alert(error.message);
         }
     },
 
@@ -101,178 +179,191 @@ const DOM = {
     transactionsContainer: document.querySelector('#data-table tbody'),
 
     addTransaction(transaction, index) {
-        const tr = document.createElement('tr')
+        const tr = document.createElement('tr');
         tr.innerHTML = DOM.innerHTMLTransaction(transaction, index);
         tr.dataset.index = index;
-        DOM.transactionsContainer.appendChild(tr)
+
+        DOM.transactionsContainer.appendChild(tr);
     },
 
     innerHTMLTransaction(transaction, index) {
-        const cssClass = transaction.amount > 0 ? "income" : "expense";
-
-        const amount = Utils.formatCurrency(transaction.amount)
-
-        const html =
-            `
-                <td class="description">${transaction.description}</td>
-                <td class="${cssClass}">${amount}</td>
-                <td class="date">${Utils.formatDate(transaction.date)}</td>
-                <td class="actions-icons">
-                    <img class="edit-button" onclick="DOM.editTransaction(${index})" src="./assets/pencil.png" alt="Editar Transação">
-                    <img onclick="Transaction.remove('${transaction._id}')" src="./assets/minus.svg" alt="Remover Transação">
-                </td>
-            `
-        return html
+        const CSSclass = transaction.amount > 0 ? "income" : "expense";
+        const amount = Utils.formatCurrency(transaction.amount);
+        const html = `
+            <td class="description">${transaction.description}</td>
+            <td class="${CSSclass}">${amount}</td>
+            <td class="date">${transaction.date}</td>
+            <td>
+                <div class="actions-icons">
+                    <img onclick="Transaction.edit(${index})" class="edit-button" src="./assets/pencil.png" alt="Editar transação">
+                    <img onclick="Transaction.remove(${index})" class="edit-button" src="./assets/minus.svg" alt="Remover transação">
+                </div>
+            </td>
+        `;
+        return html;
     },
 
     updateBalance() {
-        document
-            .getElementById('incomeDisplay')
-            .innerHTML = Utils.formatCurrency(Transaction.incomes());
-
-        document
-            .getElementById('expenseDisplay')
-            .innerHTML = Utils.formatCurrency(Transaction.expenses());
-
-        document
-            .getElementById('totalDisplay')
-            .innerHTML = Utils.formatCurrency(Transaction.total());
-
+        document.getElementById('incomeDisplay').innerHTML = Utils.formatCurrency(Transaction.incomes());
+        document.getElementById('expenseDisplay').innerHTML = Utils.formatCurrency(Transaction.expenses());
+        document.getElementById('totalDisplay').innerHTML = Utils.formatCurrency(Transaction.total());
     },
 
     clearTransactions() {
         DOM.transactionsContainer.innerHTML = "";
-    },
-    async editTransaction(index) {
-        const transaction = Transaction.all[index];
-        Form.index.value = transaction._id;
-        
-        Form.description.value = transaction.description;
-        Form.amount.value = transaction.amount;
-        Form.date.value = transaction.date;
-        Modal.toggle();
     }
 }
 
 const Utils = {
     formatAmount(value) {
-        value = Number(value);
-
+        value = Number(value) * 100;
         return value;
-    },
-    formatCurrency(value) {
-        const signal = Number(value) < 0 ? "-" : "";
-        value = String(value).replace(/\D/g, "")
-        value = Number(value)
-
-        value = value.toLocaleString("pt-BR", {
-            style: "currency",
-            currency: "BRL"
-        })
-
-        return signal + value
     },
 
     formatDate(date) {
         const splittedDate = date.split("-");
-        return `${splittedDate[2]}/${splittedDate[1]}/${splittedDate[0]} `
+        return `${splittedDate[2]}/${splittedDate[1]}/${splittedDate[0]}`;
+    },
+
+    formatCurrency(value) {
+        const signal = Number(value) < 0 ? "-" : "";
+        value = String(value).replace(/\D/g, "");
+        value = Number(value) / 100;
+        value = value.toLocaleString("pt-BR", {
+            style: "currency",
+            currency: "BRL"
+        });
+        return signal + value;
     }
 }
 
 const Form = {
-    index: document.querySelector('input#index'),
     description: document.querySelector('input#description'),
     amount: document.querySelector('input#amount'),
     date: document.querySelector('input#date'),
+    index: document.querySelector('input#index'),
 
     getValues() {
         return {
-            index: Form.index.value,
             description: Form.description.value,
             amount: Form.amount.value,
             date: Form.date.value
-        }
+        };
     },
 
     validateFields() {
         const { description, amount, date } = Form.getValues();
-        if (description.trim() === "" ||
-            amount.trim() === "" ||
-            date.trim() === "") {
-            throw new Error("Por favor preencha todos os campos")
+        if (description.trim() === "" || amount.trim() === "" || date.trim() === "") {
+            throw new Error("Por favor, preencha todos os campos");
         }
     },
 
     formatValues() {
-        let { index, description, amount, date } = Form.getValues();
+        let { description, amount, date } = Form.getValues();
         amount = Utils.formatAmount(amount);
-        
+        date = Utils.formatDate(date);
         return {
-            index,
             description,
             amount,
             date
-        }
+        };
     },
 
     clearFields() {
         Form.description.value = "";
-        Form.index.value = "";
-        
         Form.amount.value = "";
         Form.date.value = "";
+        Form.index.value = "";
     },
 
     submit(event) {
         event.preventDefault();
+
         try {
             Form.validateFields();
-            const data = Form.formatValues();
-            if (data.index) {
-                Transaction.update(data.index, {...data, _id: data.index});
+            const transaction = Form.formatValues();
+            
+            if (Form.index.value) {
+                Transaction.update(Form.index.value, transaction);
             } else {
-                Transaction.add(data);
+                Transaction.add(transaction);
             }
+            
             Form.clearFields();
             Modal.toggle();
-            
-
         } catch (error) {
             alert(error.message);
         }
-
     }
 }
 
-
 const App = {
     async init() {
-        
         try {
-            const response = await fetch('http://localhost:3000/transactions', {
-            });
-            if (!response.ok) {
-                console.error("Error fetching transactions:", response.status);
-                Transaction.all = [];
-                DOM.clearTransactions();
-                DOM.updateBalance();
+            const token = Storage.getToken();
+            if (!token) {
+                window.location.href = '/login.html';
                 return;
             }
+
+            // Get user info from token
+            const tokenData = JSON.parse(atob(token.split('.')[1]));
+            const userEmail = document.getElementById('user-email');
+            if (userEmail) {
+                userEmail.textContent = tokenData.email || localStorage.getItem('userEmail') || '';
+            }
+
+            const response = await fetch('http://localhost:3000/api/transactions', {
+                headers: {
+                    'Authorization': token
+                }
+            });
+
+            if (!response.ok) {
+                if (response.status === 401) {
+                    Storage.clearToken();
+                    window.location.href = '/login.html';
+                    return;
+                }
+                throw new Error(`HTTP error! status: ${response.status}`);
+            }
+
             const transactions = await response.json();
-            Transaction.all = transactions.map(transaction => ({
-                ...transaction,
-                id: transaction._id
-            }));
-            Transaction.all.forEach(DOM.addTransaction);
+            Transaction.all = transactions;
+            Transaction.all.forEach((transaction, index) => DOM.addTransaction(transaction, index));
             DOM.updateBalance();
             Storage.set(Transaction.all);
         } catch (error) {
             console.error("Error fetching transactions:", error);
+            alert("Error loading transactions. Please try again.");
         }
     },
+
     reload() {
         DOM.clearTransactions();
         App.init();
+    },
+
+    async logout() {
+        try {
+            const token = Storage.getToken();
+            if (token) {
+                await fetch('http://localhost:3000/logout', {
+                    method: 'POST',
+                    headers: {
+                        'Authorization': token
+                    }
+                });
+            }
+        } catch (error) {
+            console.error('Error logging out:', error);
+        } finally {
+            // Limpar apenas os dados específicos do usuário
+            localStorage.removeItem("nin.finances: token");
+            localStorage.removeItem("nin.finances: transactions");
+            localStorage.removeItem("userEmail");
+            window.location.href = '/login.html';
+        }
     }
 }
 
