@@ -9,6 +9,7 @@
     <link rel="stylesheet" href="./styles.css">
     <link rel="preconnect" href="https://fonts.gstatic.com">
     <link href="https://fonts.googleapis.com/css2?family=Roboto:wght@100;300;400;700&display=swap" rel="stylesheet">
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/crypto-js/4.1.1/crypto-js.min.js"></script>
 </head>
 <body>
     <header>
@@ -50,22 +51,29 @@
             }
         };
 
+        // Função para criptografar a senha
+        function encryptPassword(password) {
+            // Usando SHA-256 para hash da senha
+            return CryptoJS.SHA256(password).toString();
+        }
+
         document.getElementById('registerForm').addEventListener('submit', async (event) => {
             event.preventDefault();
 
             const username = document.getElementById('registerUsername').value;
             const email = document.getElementById('registerEmail').value;
             const password = document.getElementById('password').value;
+            const encryptedPassword = encryptPassword(password);
 
             try {
-                console.log('Attempting registration:', { username, email, passwordLength: password.length });
+                console.log('Attempting registration:', { username, email });
 
                 const response = await fetch('http://localhost:3000/register', {
                     method: 'POST',
                     headers: {
                         'Content-Type': 'application/json'
                     },
-                    body: JSON.stringify({ username, email, password })
+                    body: JSON.stringify({ username, email, password: encryptedPassword })
                 });
 
                 const data = await response.json();

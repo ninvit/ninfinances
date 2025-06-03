@@ -23,13 +23,14 @@ const userSchema = new mongoose.Schema({
     }
 });
 
-// Hash the password before saving
+// Hash the pre-hashed password before saving
 userSchema.pre('save', async function(next) {
     if (!this.isModified('password')) {
         return next();
     }
     
     try {
+        // A senha já vem com hash SHA-256 do cliente, agora vamos adicionar o salt e hash com bcrypt
         const salt = await bcrypt.genSalt(10);
         this.password = await bcrypt.hash(this.password, salt);
         return next();
@@ -42,6 +43,7 @@ userSchema.pre('save', async function(next) {
 // Method to compare passwords
 userSchema.methods.comparePassword = async function(candidatePassword) {
     try {
+        // candidatePassword já vem com hash SHA-256 do cliente
         return await bcrypt.compare(candidatePassword, this.password);
     } catch (err) {
         return false;

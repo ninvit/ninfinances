@@ -9,6 +9,7 @@
     <link rel="stylesheet" href="./styles.css">
     <link rel="preconnect" href="https://fonts.gstatic.com">
     <link href="https://fonts.googleapis.com/css2?family=Roboto:wght@100;300;400;700&display=swap" rel="stylesheet">
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/crypto-js/4.1.1/crypto-js.min.js"></script>
 </head>
 <body>
     <header>
@@ -46,11 +47,18 @@
             }
         };
 
+        // Função para criptografar a senha
+        function encryptPassword(password) {
+            // Usando SHA-256 para hash da senha
+            return CryptoJS.SHA256(password).toString();
+        }
+
         document.getElementById('loginForm').addEventListener('submit', async (event) => {
             event.preventDefault();
 
             const email = document.getElementById('loginEmail').value;
             const password = document.getElementById('loginPassword').value;
+            const encryptedPassword = encryptPassword(password);
 
             try {
                 console.log('Attempting login for:', email);
@@ -60,7 +68,7 @@
                     headers: {
                         'Content-Type': 'application/json'
                     },
-                    body: JSON.stringify({ email, password })
+                    body: JSON.stringify({ email, password: encryptedPassword })
                 });
 
                 const data = await response.json();
