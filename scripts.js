@@ -148,7 +148,7 @@ const DOM = {
         Form.index.value = transaction._id;
         
         Form.description.value = transaction.description;
-        Form.amount.value = transaction.amount / 100;
+        Form.amount.value = transaction.amount;
         Form.date.value = transaction.date;
         Modal.toggle();
     }
@@ -156,14 +156,14 @@ const DOM = {
 
 const Utils = {
     formatAmount(value) {
-        value = Number(value) * 100;
+        value = Number(value);
 
         return value;
     },
     formatCurrency(value) {
         const signal = Number(value) < 0 ? "-" : "";
         value = String(value).replace(/\D/g, "")
-        value = Number(value) / 100
+        value = Number(value)
 
         value = value.toLocaleString("pt-BR", {
             style: "currency",
