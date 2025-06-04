@@ -42,9 +42,15 @@ app.use(express.static(path.join(__dirname, '..')));
 // Configure CORS
 const corsOptions = {
     origin: function (origin, callback) {
-        const allowedOrigins = ['https://ninfinances.onrender.com', 'http://localhost:3000'];
+        // Get allowed origins from environment variable or use defaults
+        const allowedOrigins = process.env.ALLOWED_ORIGINS 
+            ? process.env.ALLOWED_ORIGINS.split(',')
+            : ['https://ninfinances.onrender.com', 'http://localhost:3000'];
+
         // Allow requests with no origin (like mobile apps or curl requests)
         if (!origin) return callback(null, true);
+
+        // Check if origin is allowed
         if (allowedOrigins.indexOf(origin) === -1) {
             const msg = 'The CORS policy for this site does not allow access from the specified Origin.';
             return callback(new Error(msg), false);
@@ -52,15 +58,28 @@ const corsOptions = {
         return callback(null, true);
     },
     methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS'],
-    allowedHeaders: ['Content-Type', 'Authorization'],
+    allowedHeaders: ['Content-Type', 'Authorization', 'X-Requested-With'],
+    exposedHeaders: ['Content-Range', 'X-Content-Range'],
     credentials: true,
+    maxAge: 86400, // 24 hours
     preflightContinue: false,
     optionsSuccessStatus: 204
 };
 
+// Apply CORS middleware
 app.use(cors(corsOptions));
 
-// Handle preflight requests
+// Add security headers middleware
+app.use((req, res, next) => {
+    // Set security headers
+    res.setHeader('X-Content-Type-Options', 'nosniff');
+    res.setHeader('X-Frame-Options', 'DENY');
+    res.setHeader('X-XSS-Protection', '1; mode=block');
+    res.setHeader('Strict-Transport-Security', 'max-age=31536000; includeSubDomains');
+    next();
+});
+
+// Handle preflight requests explicitly
 app.options('*', cors(corsOptions));
 
 app.use(express.json());
