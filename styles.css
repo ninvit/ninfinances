@@ -87,6 +87,41 @@ button:hover {
     display: inline-block;
     margin-bottom: 0.8rem;
 }
+
+.month-filter {
+    display: flex;
+    align-items: center;
+    gap: 1rem;
+    margin: 0;
+}
+
+.month-filter select {
+    padding: 0.5rem;
+    border: 1px solid #ccc;
+    border-radius: 0.25rem;
+    background-color: white;
+    color: var(--dark-blue);
+    font-size: 1rem;
+    cursor: pointer;
+}
+
+.month-filter select:hover {
+    border-color: var(--dark-blue);
+}
+
+#transaction {
+    display: block;
+    width: 100%;
+    overflow-x: auto;
+}
+
+.transaction-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 1rem;
+}
+
 /* --------------- HEADER ---------------*/
 header {
     background: darkorange;
@@ -178,11 +213,6 @@ header {
 }
 
 /* --------------- TABLE ---------------*/
-#transaction {
-    display: block;
-    width: 100%;
-    overflow-x: auto;
-}
 #data-table {
     width: 100%;
     border-spacing: 0 0.5rem;

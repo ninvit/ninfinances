@@ -159,26 +159,26 @@ const Transaction = {
         }
     },
 
-    incomes() {
+    incomes(transactions = Transaction.all) {
         let income = 0;
-        Transaction.all.forEach(transaction => {
+        transactions.forEach(transaction => {
             if (transaction.amount > 0) {
                 income += transaction.amount
             }
         })
         return income
     },
-    expenses() {
+    expenses(transactions = Transaction.all) {
         let expense = 0;
-        Transaction.all.forEach(transaction => {
+        transactions.forEach(transaction => {
             if (transaction.amount < 0) {
                 expense += transaction.amount
             }
         })
         return expense
     },
-    total() {
-        return Transaction.incomes() + Transaction.expenses()
+    total(transactions = Transaction.all) {
+        return Transaction.incomes(transactions) + Transaction.expenses(transactions)
     }
 }
 
@@ -210,10 +210,10 @@ const DOM = {
         return html;
     },
 
-    updateBalance() {
-        document.getElementById('incomeDisplay').innerHTML = Utils.formatCurrency(Transaction.incomes());
-        document.getElementById('expenseDisplay').innerHTML = Utils.formatCurrency(Transaction.expenses());
-        document.getElementById('totalDisplay').innerHTML = Utils.formatCurrency(Transaction.total());
+    updateBalance(transactions = Transaction.all) {
+        document.getElementById('incomeDisplay').innerHTML = Utils.formatCurrency(Transaction.incomes(transactions));
+        document.getElementById('expenseDisplay').innerHTML = Utils.formatCurrency(Transaction.expenses(transactions));
+        document.getElementById('totalDisplay').innerHTML = Utils.formatCurrency(Transaction.total(transactions));
     },
 
     clearTransactions() {
@@ -340,13 +340,33 @@ const App = {
 
             const transactions = await response.json();
             Transaction.all = transactions;
-            Transaction.all.forEach((transaction, index) => DOM.addTransaction(transaction, index));
+            App.displayTransactions(Transaction.all);
             DOM.updateBalance();
             Storage.set(Transaction.all);
         } catch (error) {
             console.error("Error fetching transactions:", error);
             alert("Error loading transactions. Please try again.");
         }
+    },
+
+    displayTransactions(transactions) {
+        DOM.clearTransactions();
+        transactions.forEach((transaction, index) => DOM.addTransaction(transaction, index));
+        DOM.updateBalance(transactions);
+    },
+
+    filterByMonth(month) {
+        if (!month) {
+            App.displayTransactions(Transaction.all);
+            return;
+        }
+
+        const filteredTransactions = Transaction.all.filter(transaction => {
+            const [day, monthStr, year] = transaction.date.split('/');
+            return monthStr === month;
+        });
+
+        App.displayTransactions(filteredTransactions);
     },
 
     reload() {

@@ -45,7 +45,7 @@ const corsOptions = {
         // Get allowed origins from environment variable or use defaults
         const allowedOrigins = process.env.ALLOWED_ORIGINS 
             ? process.env.ALLOWED_ORIGINS.split(',')
-            : ['https://ninfinances.onrender.com', 'http://localhost:3000'];
+            : ['https://ninfinances-415b08c409ff.herokuapp.com', 'http://localhost:3000', 'http://localhost:8080'];
 
         // Allow requests with no origin (like mobile apps or curl requests)
         if (!origin) return callback(null, true);
