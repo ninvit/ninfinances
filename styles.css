@@ -6,11 +6,24 @@
 * {
     margin: 0;
     padding: 0;
-    box-sizing: border-box;    
+    box-sizing: border-box;
+}
+
+/* Smooth scrolling */
+html {
+    scroll-behavior: smooth;
+}
+
+/* Melhora a legibilidade no mobile */
+*,
+*:before,
+*:after {
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
 }
 
 html {
-    font-size: 93.75%;
+    font-size: 87.5%; /* Base mobile - sobrescrito pelas media queries */
 }
 
 body {
@@ -31,8 +44,9 @@ body {
 }
 
 .container {
-    width: min(90vw, 800px);
+    width: min(95vw, 800px);
     margin: auto;
+    padding: 0 1rem;
 }
 
 /* --------------- TITLES ---------------*/
@@ -366,15 +380,419 @@ footer {
     color: #3dd705;
 }
 
+/* --------------- AUTH PAGES ---------------*/
+.auth-page {
+    min-height: 100vh;
+    display: flex;
+    flex-direction: column;
+}
+
+.auth-page header {
+    padding: 2rem 0 4rem;
+}
+
+.auth-page main {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
+    max-width: 400px;
+    margin: 0 auto;
+    padding: 2rem 1rem;
+}
+
+.auth-page h1 {
+    text-align: center;
+    color: var(--dark-blue);
+    margin-bottom: 2rem;
+    font-size: 2rem;
+}
+
+.auth-page form {
+    width: 100%;
+    display: flex;
+    flex-direction: column;
+    gap: 1rem;
+}
+
+.auth-page label {
+    color: var(--dark-blue);
+    font-weight: 500;
+    margin-bottom: 0.25rem;
+    display: block;
+}
+
+.auth-page input {
+    width: 100%;
+    padding: 1rem;
+    border: 2px solid #e1e5e9;
+    border-radius: 0.5rem;
+    font-size: 1rem;
+    transition: border-color 0.3s ease;
+    margin-bottom: 0.5rem;
+}
+
+.auth-page input:focus {
+    outline: none;
+    border-color: darkorange;
+    box-shadow: 0 0 0 3px rgba(255, 140, 0, 0.1);
+}
+
+.auth-page button {
+    width: 100%;
+    padding: 1rem;
+    font-size: 1.1rem;
+    font-weight: 600;
+    margin-top: 1rem;
+    background: darkorange;
+    border: none;
+    border-radius: 0.5rem;
+    color: white;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    min-height: 50px;
+}
+
+.auth-page button:hover {
+    background: #e67e00;
+    transform: translateY(-1px);
+    box-shadow: 0 4px 12px rgba(255, 140, 0, 0.3);
+}
+
+.auth-page button:active {
+    transform: translateY(0);
+}
+
+.auth-page p {
+    text-align: center;
+    margin-top: 2rem;
+    color: var(--dark-blue);
+}
+
+.auth-page a {
+    color: darkorange;
+    text-decoration: none;
+    font-weight: 600;
+    transition: color 0.3s ease;
+}
+
+.auth-page a:hover {
+    color: #e67e00;
+    text-decoration: underline;
+}
+
 /* --------------- RESPONSIVE ---------------*/
-@media (min-width: 800px) {
+
+/* Mobile First - Base styles são para mobile */
+html {
+    font-size: 87.5%; /* 14px */
+}
+
+body {
+    font-size: 1rem;
+    line-height: 1.5;
+}
+
+/* Mobile adjustments */
+.container {
+    width: min(95vw, 800px);
+    padding: 0 1rem;
+}
+
+/* Header responsivo */
+.header-content {
+    flex-direction: column;
+    gap: 1rem;
+    padding: 1rem;
+    text-align: center;
+}
+
+.user-info {
+    flex-direction: column;
+    gap: 0.5rem;
+    width: 100%;
+}
+
+.user-email {
+    font-size: 0.9rem;
+    word-break: break-all;
+    text-align: center;
+}
+
+#logout-button {
+    width: auto;
+    min-width: 120px;
+    padding: 0.75rem 1.5rem;
+    font-size: 1rem;
+}
+
+/* Cards responsivos */
+.card {
+    padding: 1rem 1.5rem;
+    margin-bottom: 1rem;
+}
+
+.card h3 {
+    font-size: 0.9rem;
+    margin-bottom: 0.5rem;
+}
+
+.card p {
+    font-size: 1.5rem;
+    line-height: 2rem;
+    margin-top: 0.5rem;
+}
+
+/* Transaction header mobile */
+.transaction-header {
+    flex-direction: column;
+    gap: 1rem;
+    align-items: stretch;
+}
+
+.button.new {
+    width: 100%;
+    text-align: center;
+    padding: 1rem;
+    font-size: 1rem;
+    margin-bottom: 0;
+}
+
+.month-filter {
+    justify-content: center;
+}
+
+.month-filter select {
+    width: 100%;
+    max-width: 300px;
+    padding: 0.75rem;
+    font-size: 1rem;
+}
+
+/* Table responsivo */
+#data-table {
+    font-size: 0.9rem;
+    display: block;
+    overflow-x: auto;
+    white-space: nowrap;
+    border-spacing: 0;
+}
+
+table thead,
+table tbody {
+    display: table;
+    width: 100%;
+    min-width: 500px;
+}
+
+table th,
+table td {
+    padding: 0.75rem 1rem;
+    text-align: left;
+    min-width: 100px;
+}
+
+table th:first-child,
+table td:first-child {
+    min-width: 150px;
+}
+
+table th:last-child,
+table td:last-child {
+    min-width: 80px;
+    text-align: center;
+}
+
+.actions-icons {
+    gap: 0.5rem;
+}
+
+.edit-button {
+    width: 24px;
+    height: 24px;
+}
+
+/* Modal responsivo */
+.modal {
+    margin: 1rem;
+    padding: 1.5rem;
+    max-width: 90vw;
+    max-height: 90vh;
+    overflow-y: auto;
+}
+
+#form {
+    max-width: 100%;
+}
+
+input {
+    padding: 1rem;
+    font-size: 1rem;
+    margin: 0.3rem 0;
+}
+
+input[type="date"] {
+    min-height: 50px;
+}
+
+.input-group.actions {
+    flex-direction: column;
+    gap: 1rem;
+}
+
+.input-group.actions .button,
+.input-group.actions button {
+    width: 100%;
+    padding: 1rem;
+    font-size: 1rem;
+}
+
+/* Melhorias gerais para mobile */
+button {
+    min-height: 48px; /* Área de toque adequada */
+    font-size: 1rem;
+    cursor: pointer;
+    -webkit-tap-highlight-color: transparent;
+}
+
+a {
+    min-height: 44px; /* Área de toque adequada */
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+}
+
+/* Ajustes para telas muito pequenas */
+@media (max-width: 480px) {
     html {
-        font-size: 87.5%;
+        font-size: 85%; /* 13.6px */
+    }
+    
+    .container {
+        width: 98vw;
+        padding: 0 0.5rem;
+    }
+    
+    .header-content {
+        padding: 0.5rem;
+    }
+    
+    .card {
+        padding: 1rem;
+    }
+    
+    .card p {
+        font-size: 1.3rem;
+        line-height: 1.8rem;
+    }
+    
+    table th,
+    table td {
+        padding: 0.5rem 0.75rem;
+        font-size: 0.85rem;
+    }
+    
+    .modal {
+        margin: 0.5rem;
+        padding: 1rem;
+    }
+}
+
+/* Tablet e telas maiores */
+@media (min-width: 768px) {
+    html {
+        font-size: 93.75%; /* 15px */
+    }
+    
+    .container {
+        padding: 0 2rem;
+    }
+    
+    .header-content {
+        flex-direction: row;
+        padding: 0 2rem;
+        text-align: left;
+    }
+    
+    .user-info {
+        flex-direction: row;
+        width: auto;
+    }
+    
+    .user-email {
+        font-size: 1rem;
+        word-break: normal;
+    }
+    
+    .transaction-header {
+        flex-direction: row;
+        align-items: center;
+    }
+    
+    .button.new {
+        width: auto;
+        margin-bottom: 0.8rem;
+    }
+    
+    .month-filter {
+        justify-content: flex-end;
+    }
+    
+    .month-filter select {
+        width: auto;
+        max-width: none;
+    }
+    
+    .input-group.actions {
+        flex-direction: row;
+        gap: 0;
+    }
+    
+    .input-group.actions .button,
+    .input-group.actions button {
+        width: 48%;
+    }
+}
+
+/* Desktop */
+@media (min-width: 1024px) {
+    html {
+        font-size: 100%; /* 16px */
     }
 
     #balance {
         display: grid;
         grid-template-columns: repeat(3, 1fr);
-        gap: 2rem
+        gap: 2rem;
+    }
+    
+    .card {
+        padding: 1.5rem 2rem;
+        margin-bottom: 2rem;
+    }
+    
+    .card p {
+        font-size: 2rem;
+        line-height: 3rem;
+        margin-top: 1rem;
+    }
+    
+    table {
+        display: table;
+        overflow-x: visible;
+    }
+    
+    table thead,
+    table tbody {
+        display: table-row-group;
+        width: auto;
+        min-width: auto;
+    }
+    
+    table th,
+    table td {
+        padding: 0.5rem 2rem;
+        min-width: auto;
     }
 }
