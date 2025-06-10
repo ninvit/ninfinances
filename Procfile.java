@@ -1,1 +1,0 @@
-web: java -jar backend-java/target/ninfinances-1.0.0.jar 

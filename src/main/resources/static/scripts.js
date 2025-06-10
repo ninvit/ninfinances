@@ -1,3 +1,4 @@
+// Cache buster: v2.0 - Fixed ID field compatibility
 const Modal = {
     toggle() {
         document.querySelector('.modal-overlay').classList.toggle('active')
@@ -76,11 +77,12 @@ const Transaction = {
             }
 
             const transaction = Transaction.all[index];
-            if (!transaction || !transaction._id) {
+            const transactionId = transaction?._id || transaction?.id;
+            if (!transaction || !transactionId) {
                 throw new Error('Invalid transaction');
             }
 
-            const response = await fetch(`${window.APP_CONFIG.backendUrl}/api/transactions/${transaction._id}`, {
+            const response = await fetch(`${window.APP_CONFIG.backendUrl}/api/transactions/${transactionId}`, {
                 method: 'DELETE',
                 headers: {
                     'Authorization': `Bearer ${token}`
@@ -107,7 +109,8 @@ const Transaction = {
 
     edit(index) {
         const transaction = Transaction.all[index];
-        if (!transaction || !transaction._id) {
+        const transactionId = transaction?._id || transaction?.id;
+        if (!transaction || !transactionId) {
             alert('Invalid transaction');
             return;
         }
@@ -127,11 +130,12 @@ const Transaction = {
             }
 
             const oldTransaction = Transaction.all[index];
-            if (!oldTransaction || !oldTransaction._id) {
+            const transactionId = oldTransaction?._id || oldTransaction?.id;
+            if (!oldTransaction || !transactionId) {
                 throw new Error('Invalid transaction');
             }
 
-            const response = await fetch(`${window.APP_CONFIG.backendUrl}/api/transactions/${oldTransaction._id}`, {
+            const response = await fetch(`${window.APP_CONFIG.backendUrl}/api/transactions/${transactionId}`, {
                 method: 'PUT',
                 headers: {
                     'Content-Type': 'application/json',

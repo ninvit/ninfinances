@@ -3,17 +3,25 @@ package com.ninfinances.application.service;
 import com.ninfinances.domain.model.Transaction;
 import com.ninfinances.domain.repository.TransactionRepository;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
 
+@Slf4j
 @Service
 @RequiredArgsConstructor
 public class TransactionService {
     private final TransactionRepository transactionRepository;
 
     public List<Transaction> getAllTransactions(String userId) {
-        return transactionRepository.findByUserId(userId);
+        log.info("Searching transactions for userId: {}", userId);
+        
+        // Always use flexible search to handle both String and ObjectId formats
+        List<Transaction> transactions = transactionRepository.findByUserIdFlexible(userId);
+        log.info("Found {} transactions with flexible search for userId: {}", transactions.size(), userId);
+        
+        return transactions;
     }
 
     public Transaction createTransaction(Transaction transaction) {

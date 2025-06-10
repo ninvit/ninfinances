@@ -1,1 +1,1 @@
-web: java -jar backend-java/target/ninfinances-1.0.0.jar 
+web: java -jar target/ninfinances-1.0.0.jar 

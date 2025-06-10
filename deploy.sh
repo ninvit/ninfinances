@@ -1,17 +1,31 @@
 #!/bin/bash
 
-# Build das imagens
-echo "Building images..."
-docker-compose build
+# Deploy script for NinFinances
+echo "🚀 Deploying NinFinances to Heroku..."
 
-# Tag das imagens
-echo "Tagging images..."
-docker tag ninfinances/backend:latest ninfinances/backend:latest
-docker tag ninfinances/frontend:latest ninfinances/frontend:latest
+# Build the application
+echo "📦 Building application..."
+./mvnw clean package -DskipTests
 
-# Push das imagens
-echo "Pushing images to Docker Hub..."
-docker push ninfinances/backend:latest
-docker push ninfinances/frontend:latest
-
-echo "Done!" 
+# Check if build was successful
+if [ $? -eq 0 ]; then
+    echo "✅ Build successful!"
+    
+    # Add files to git
+    echo "📝 Committing changes..."
+    git add .
+    git commit -m "Deploy: $(date '+%Y-%m-%d %H:%M:%S')"
+    
+    # Deploy to Heroku
+    echo "🚀 Deploying to Heroku..."
+    git push heroku main
+    
+    # Open app in browser
+    echo "🌐 Opening app..."
+    heroku open
+    
+    echo "✅ Deploy completed!"
+else
+    echo "❌ Build failed! Please fix errors before deploying."
+    exit 1
+fi 
