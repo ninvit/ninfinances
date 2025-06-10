@@ -1,0 +1,19 @@
+spring:
+  data:
+    mongodb:
+      uri: ${MONGODB_URI:mongodb://localhost:27017/ninfinances}
+  security:
+    jwt:
+      secret: ${JWT_SECRET:umsegredoseguro}
+      expiration: 86400000 # 24 hours
+
+server:
+  port: ${PORT:3000}
+
+cors:
+  allowed-origins: ${ALLOWED_ORIGINS:https://ninfinances-415b08c409ff.herokuapp.com,http://localhost:3000,http://localhost:8080}
+
+logging:
+  level:
+    com.ninfinances: DEBUG
+    org.springframework.security: INFO 
