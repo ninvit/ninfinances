@@ -4,6 +4,7 @@
 /Users/vitoralves/CascadeProjects/ninfinances/backend-java/src/main/java/com/ninfinances/domain/repository/TransactionRepository.java
 /Users/vitoralves/CascadeProjects/ninfinances/backend-java/src/main/java/com/ninfinances/interfaces/controller/TransactionController.java
 /Users/vitoralves/CascadeProjects/ninfinances/backend-java/src/main/java/com/ninfinances/NinFinancesApplication.java
+/Users/vitoralves/CascadeProjects/ninfinances/backend-java/src/main/java/com/ninfinances/infrastructure/config/WebConfig.java
 /Users/vitoralves/CascadeProjects/ninfinances/backend-java/src/main/java/com/ninfinances/domain/repository/UserRepository.java
 /Users/vitoralves/CascadeProjects/ninfinances/backend-java/src/main/java/com/ninfinances/domain/model/User.java
 /Users/vitoralves/CascadeProjects/ninfinances/backend-java/src/main/java/com/ninfinances/domain/model/Transaction.java

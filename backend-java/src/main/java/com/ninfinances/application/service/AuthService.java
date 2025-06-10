@@ -47,7 +47,7 @@ public class AuthService {
     }
 
     private String generateToken(User user) {
-        Key key = Jwts.SIG.HS256.key().build();
+        Key key = Keys.hmacShaKeyFor(jwtSecret.getBytes());
         
         Map<String, Object> claims = new HashMap<>();
         claims.put("userId", user.getId());
@@ -55,6 +55,7 @@ public class AuthService {
 
         return Jwts.builder()
                 .setClaims(claims)
+                .setSubject(user.getEmail())
                 .setIssuedAt(new Date())
                 .setExpiration(new Date(System.currentTimeMillis() + jwtExpiration))
                 .signWith(key, SignatureAlgorithm.HS256)

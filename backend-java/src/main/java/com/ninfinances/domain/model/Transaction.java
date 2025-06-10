@@ -10,7 +10,7 @@ public class Transaction {
     @Id
     private String id;
     private String description;
-    private Long amount;
+    private Double amount;
     private String date;
     private String userId;
 } 

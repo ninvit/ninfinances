@@ -1,7 +1,7 @@
 spring:
   data:
     mongodb:
-      uri: mongodb://localhost:27017/ninfinances
+      uri: ${MONGODB_URI:mongodb://localhost:27017/ninfinances}
   security:
     jwt:
       secret: ${JWT_SECRET:umsegredoseguro}
@@ -9,8 +9,6 @@ spring:
 
 server:
   port: ${PORT:3000}
-  servlet:
-    context-path: /api
 
 cors:
   allowed-origins: ${ALLOWED_ORIGINS:https://ninfinances-415b08c409ff.herokuapp.com,http://localhost:3000,http://localhost:8080}

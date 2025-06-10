@@ -35,8 +35,11 @@ public class SecurityConfig {
             .csrf(csrf -> csrf.disable())
             .sessionManagement(session -> session.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
             .authorizeHttpRequests(auth -> auth
-                .requestMatchers("/auth/**").permitAll()
-                .anyRequest().authenticated()
+                .requestMatchers("/register", "/login").permitAll()
+                .requestMatchers("/", "/login.html", "/register.html", "/index.html").permitAll()
+                .requestMatchers("/assets/**", "/styles.css", "/scripts.js", "/config.js").permitAll()
+                .requestMatchers("/api/**").authenticated()
+                .anyRequest().permitAll()
             )
             .oauth2ResourceServer(oauth2 -> oauth2.jwt());
 
